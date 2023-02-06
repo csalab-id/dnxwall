@@ -1,0 +1,60 @@
+version: "3"
+services:
+  dnxwall:
+    hostname: dnxwall
+    build: .
+    image: dnxwall:1.0
+    restart: always
+    ports:
+      - 0.0.0.0:80:80
+      - 0.0.0.0:443:443
+    volumes:
+      - /var/run/docker.sock:/data/docker.sock
+      - ./nginx/conf/:/data/conf.d/
+      - ./nginx/log/:/var/log/nginx/
+      - ./nginx/letsencrypt/:/etc/letsencrypt/
+      - ./startup.sh:/data/startup.sh
+    networks:
+      - internet
+      - no-internet
+    command: /bin/sh /data/startup.sh
+
+  blog:
+    image: 'wordpress:6.1.1-php8.0-apache'
+    hostname: csalab.dev
+    restart: always
+    environment:
+      - DNXWALL_DSTPORT=80
+      - DNXWALL_SSL=false
+      - DNXWALL_FORCE_SSL=false
+      - DNXWALL_FORCE_WWW=false
+      - DNXWALL_EMAIL=changeme@example.com
+      - WORDPRESS_DB_HOST=blog-db
+      - WORDPRESS_DB_USER=user
+      - WORDPRESS_DB_PASSWORD=password
+      - WORDPRESS_DB_NAME=blog
+    volumes:
+      - ./data/blog:/var/www/html
+    networks:
+      - internet
+      - no-internet
+  
+  blog-db:
+    image: 'mysql:8.0.32'
+    restart: always
+    environment:
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=blog
+      - MYSQL_RANDOM_ROOT_PASSWORD=1
+    volumes:
+      - ./data/blog-db:/var/lib/mysql
+    networks:
+      - no-internet
+
+networks:
+  internet:
+    driver: bridge
+  no-internet:
+    driver: bridge
+    internal: true

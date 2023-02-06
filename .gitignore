@@ -1,0 +1,15 @@
+# Ignore Mac DS_Store files
+.DS_Store
+.DS_Store?
+
+# Ignore nginx log
+nginx/log/*
+
+# Ignore letsencrypt file
+nginx/letsencrypt/*
+
+# Ignore contain data
+data/*
+
+# Ignore production.yml
+production.yml
